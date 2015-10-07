@@ -1,0 +1,28 @@
+{
+  "name": "scriptrunner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "appium": "^1.4.13",
+    "colors": "^1.1.2",
+    "fs-extra": "^0.20.0",
+    "prompt": "^0.2.14",
+    "request": "^2.64.0",
+    "superagent": "^1.4.0",
+    "tar.gz": "^0.1.1",
+    "underscore": "^1.8.3",
+    "wd": "^0.3.12"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Ruiqi.Li",
+  "license": "ISC"
+}
