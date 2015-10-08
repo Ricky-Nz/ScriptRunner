@@ -52,7 +52,7 @@ function start (config) {
 
 					print('yellow', '-> Starting download package and install on your device...');
 					input.driver = wd.promiseChainRemote({
-						host: 'localhost',
+						host: '0.0.0.0',
 						port: 4723
 					});
 
@@ -79,12 +79,14 @@ function start (config) {
 							input.platform, input.osVserion, input.installPack);
 				})
 				.then(function (report) {
-					console.log(JSON.stringify(report));
+					print('yellow', 'Uploading test report...');
+					return connector.uploadReport(report);
 				})
 				.then(function (result) {
-					print('yellow', '----------------------------------------');
-					print('yellow', '------->   All Test Finished   <--------');
-					print('yellow', '----------------------------------------');
+					print('yellow', 'Uploading report success.');
+					print('yellow', '-----------------------------------');
+					print('yellow', '------->  Test Finished   <--------');
+					print('yellow', '-----------------------------------');
 				})
 				.catch(function (error) {
 					print('red', error.stack ? error.stack : error);
@@ -100,9 +102,9 @@ function start (config) {
 	    appiumProcess.kill();
 	});
 
-	print('yellow', '----------------------------------------');
-	print('yellow', ' Welcome to Gear Test Automation System ');
-	print('yellow', '----------------------------------------');
+	print('yellow', '---------------------------------');
+	print('yellow', ' Welcome to Gear Test Automation ');
+	print('yellow', '---------------------------------');
 	print('yellow', 'Starting...');
 }
 

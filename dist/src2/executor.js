@@ -77,6 +77,9 @@ function performAction (action, element, driver) {
 		case 'BACK':
 			print('yellow', '-> back');
 			return driver.back();
+		case 'WAIT':
+			print('yellow', '-> wait ' + action.actionArgs + ' in milliseconds');
+			return driver.sleep(action.actionArgs);
 		default:
 			print('yellow', '-> skip action ' + action.actionType);
 	}
@@ -139,7 +142,7 @@ function findElement (action, driver) {
 			return;
 	}
 
-	print('yellow', '-> ' + functionName + ': "' + arg + '"' + (isNaN(index) ? '' : (' position: ' + index + ' ')) + '...');
+	print('yellow', '-> find ' + functionName + ': "' + arg + '"' + (isNaN(index) ? '' : (' position: ' + index + ' ')) + '...');
 	return driver[functionName](arg)
 		.then(function (element) {
 			if (isNaN(index)) {
@@ -187,7 +190,7 @@ function runScript (bundle) {
 		var script = bundle.scripts.splice(0, 1)[0];
 		var driver = bundle.driver;
 
-		print('yellow', '----------> ' + script.title + '  (' + bundle.scripts.length + ' remains) <----------');
+		print('yellow', '----------> ' + script.title + '  (' + (bundle.total - bundle.scripts.length) + '/' + bundle.total + ') <----------');
 		reporter.scriptStart(script);
 
 		driver
@@ -231,7 +234,8 @@ module.exports = {
 				return runScript;
 			}).reduce(Q.when, Q({
 				driver: driver,
-				scripts: scripts
+				scripts: scripts,
+				total: scripts.length
 			})).then(function () {
 				return reporter.end();
 			});

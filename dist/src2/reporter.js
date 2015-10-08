@@ -11,7 +11,9 @@ module.exports = {
 			platform: platform,
 			platformVersion: osVersion,
 			packageName: installPack.title,
+			pacakgeDescription: installPack.description,
 			packageDate: installPack.date,
+			packagePath: '/storage/' + installPack.testerId + '/' + installPack.fileName,
 			scripts: []
 		};
 	},

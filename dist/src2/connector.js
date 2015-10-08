@@ -101,6 +101,7 @@ function selectPackage (resolve, reject) {
 
 		body.data.forEach(function (data, index) {
 			print('green', (index + 1) + ' ' + data.title);
+			print('gray', '    ' + data.description);
 		});
 
 		promptGet('package', function (value) {
@@ -167,6 +168,28 @@ function selectScript (resolve, reject, tags) {
 	});
 }
 
+function uploadReport (resolve, reject, report) {
+	var user = getLoginUser();
+
+	request({
+		method: 'post',
+		url: config.server.protocol + '://' + config.server.host + ':'
+			+ config.server.port + config.server.path + '/api/testers/' + user.userId +'/reports',
+		qs: {
+			access_token: user.id
+		},
+		json: report
+	}, function (error, response, body) {
+		if (sessionExipre(response, reject)) return;
+
+		if (error) {
+			reject(error);
+		} else {
+			resolve(body);
+		}
+	});
+}
+
 function sessionExipre (response, reject) {
 	if (response.statusCode == 401) {
 		fs.unlinkSync(path.join(__dirname, 'session'));
@@ -209,5 +232,11 @@ module.exports = {
 		return Q.Promise(function (resolve, reject) {
 			return selectScript(resolve, reject, tags);
 		});
+	},
+	uploadReport: function (report) {
+		return Q.Promise(function (resolve, reject) {
+			return uploadReport(resolve, reject, report);
+		});
 	}
 }
+
