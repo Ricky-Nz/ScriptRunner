@@ -15,7 +15,7 @@ function runLogin (resolve, reject, user) {
 		json: user
 	}, function (error, response, body) {
 		if (error || !body.id) {
-			return reject(error ? error : new Error('Login failed: ' + JSON.stringify(body)));
+			return reject('username or password is not correct!');
 		}
 
 		fs.writeFileSync(path.join(__dirname, 'session'), JSON.stringify(body));
@@ -193,7 +193,7 @@ function uploadReport (resolve, reject, report) {
 function sessionExipre (response, reject) {
 	if (response.statusCode == 401) {
 		fs.unlinkSync(path.join(__dirname, 'session'));
-		reject(new Error('Login session expired.'));
+		reject('Login session expired.');
 		return true
 	}
 }

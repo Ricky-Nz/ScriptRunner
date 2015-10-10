@@ -2,10 +2,10 @@
 var exec = require('child_process').exec,
 	wd = require('wd'),
 	path = require('path'),
-	print = require('./src2/print'),
-	connector = require('./src2/connector'),
-	device = require('./src2/device'),
-	executor = require('./src2/executor');
+	print = require('./src/print'),
+	connector = require('./src/connector'),
+	device = require('./src/device'),
+	executor = require('./src/executor');
 
 function start (config) {
 	var appiumProcess = exec('node ' + path.join(__dirname, 'node_modules', 'appium', 'bin', 'appium.js'), {maxBuffer: 1024 * 1024 * 500}, function (error, stdout, stderr){
