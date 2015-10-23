@@ -2,10 +2,11 @@ var Q = require('q'),
 	request = require('request'),
 	print = require('./print'),
 	path = require('path'),
-	fs = require('fs'),
-	config = require('../../config'),
+	fs = require('fs-extra'),
+	config = require('../config'),
 	_ = require('underscore'),
-	promptGet = require('./prompt');
+	promptGet = require('./prompt'),
+	targz = require('tar.gz');
 
 function runLogin (resolve, reject, user) {
 	request({
@@ -154,17 +155,18 @@ function selectScript (resolve, reject, tags) {
 			+ config.server.port + config.server.path + '/api/testers/' + user.userId +'/scripts',
 		qs: {
 			access_token: user.id,
-			filter: JSON.stringify({where: {tags: {inq: tags}}})
+			filter: JSON.stringify({where: {tags: {inq: tags}}}),
+			convert: true
 		},
 		json: true
 	}, function (error, response, body) {
 		if (sessionExipre(response, reject)) return;
 
-		if (error || !body.data || body.data.length < 0) {
+		if (error || !body || body.length < 0) {
 			return reject(new Error('None of script/tag found'));
 		}
 
-		resolve(body.data);
+		resolve(body);
 	});
 }
 
@@ -187,6 +189,38 @@ function uploadReport (resolve, reject, report) {
 		} else {
 			resolve(body);
 		}
+	});
+}
+
+function uploadReportNew (resolve, reject, report) {
+	var uploadFile = path.join(__dirname,'..', 'report.tar.gz');
+
+	new targz().compress(path.join(__dirname, '..', 'screenshoot'), uploadFile, function (err, response) {
+	    if (err) {
+	        return reject(err);
+	    }
+
+	    var user = getLoginUser();
+		var formData = {
+			report: JSON.stringify(report),
+			file: fs.createReadStream(uploadFile)
+		};
+
+		request.post({
+			url: config.server.protocol + '://' + config.server.host + ':'
+					+ config.server.port + config.server.path + '/api/containers/' + user.userId +'/upload',
+			formData: formData,
+			qs: {
+				access_token: user.id
+			},
+			json: true
+		}, function (err, response, body) {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(body);
+			}
+		});
 	});
 }
 
@@ -235,7 +269,7 @@ module.exports = {
 	},
 	uploadReport: function (report) {
 		return Q.Promise(function (resolve, reject) {
-			return uploadReport(resolve, reject, report);
+			return uploadReportNew(resolve, reject, report);
 		});
 	}
 }

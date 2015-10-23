@@ -1,1 +1,5 @@
-dist/node_modules
+node_modules/
+screenshoot/
+report*
+src/session
+*/.DS_Store

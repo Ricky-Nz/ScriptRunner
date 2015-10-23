@@ -6,6 +6,8 @@ module.exports = {
 		path: ''
 	},
 	driver: {
+		host: '127.0.0.1',
+		port: 4723,
 		findElementTimeout: 15000,
 		performActionTimeout: 15000
 	}

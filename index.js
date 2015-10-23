@@ -52,8 +52,8 @@ function start (config) {
 
 					print('yellow', '-> Starting download package and install on your device...');
 					input.driver = wd.promiseChainRemote({
-						host: '0.0.0.0',
-						port: 4723
+						host: config.driver.host,
+						port: config.driver.port
 					});
 
 					return input.driver.init({

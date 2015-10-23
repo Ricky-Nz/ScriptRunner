@@ -1,9 +1,25 @@
 var Q = require('q'),
 	print = require('./print'),
 	wd = require('wd'),
+	path = require('path'),
+	fs = require('fs-extra'),
 	reporter = require('./reporter');
 
-function performAction (action, element, driver) {
+function takeScreenShoot(driver) {
+	return Q.Promise(function (resolve, reject) {
+		var fileName = Date.now().toString();
+
+		driver.saveScreenshot(path.join(__dirname, '..', 'screenshoot', fileName))
+			.then(function (path) {
+				resolve(fileName + '.png');
+			})
+			.catch(function () {
+				resolve();
+			});
+	});
+}
+
+function performAction(action, element, driver) {
 	var type = action.actionType ? action.actionType.toUpperCase() : null;
 
 	switch(type) {
@@ -16,11 +32,11 @@ function performAction (action, element, driver) {
 		case 'TOUCH':
 			if (action.actionArgs && action.actionArgs.match(/\((\d*\.?\d+), ?(\d*\.?\d+)\)/)) {
 				var regResult = action.actionArgs.match(/\((\d*\.?\d+), ?(\d*\.?\d+)\)/);
-			    var touchAction = new wd.TouchAction();
-			    touchAction.press({
-			    	x: regResult[1],
-			    	y: regResult[2]
-			    }).release();
+				var touchAction = new wd.TouchAction();
+				touchAction.press({
+					x: regResult[1],
+					y: regResult[2]
+				}).release();
 
 			    print('yellow', '-> touch at x: ' + regResult[1] + ', y:' + regResult[2]);
 				return driver.performTouchAction(touchAction);
@@ -85,7 +101,7 @@ function performAction (action, element, driver) {
 	}
 }
 
-function findElement (action, driver) {
+function findElement(action, driver) {
 	var type = action.findType ? action.findType.toUpperCase() : null;
 	var arg = action.findArgs;
 	var index;
@@ -157,7 +173,7 @@ function findElement (action, driver) {
 		});
 }
 
-function runAction (bundle) {
+function runAction(bundle) {
 	return Q.Promise(function (resolve, reject) {
 		var action = bundle.actions.splice(0, 1)[0];
 		var driver = bundle.driver;
@@ -174,12 +190,22 @@ function runAction (bundle) {
 						return performAction(action, element, driver);
 					})
 					.then(function () {
-						reporter.actionEnd();
+						return takeScreenShoot(driver);
+					})
+					.then(function (filePath) {
+						reporter.actionEnd(filePath);
 						resolve(bundle);
 					})
 					.catch(function (err) {
-						reporter.actionEnd(err);
-						reject(err);
+						takeScreenShoot(driver)
+							.then(function (filePath) {
+								reporter.actionEnd(filePath, err);
+								reject(err);
+							})
+							.catch(function (err) {
+								reporter.actionEnd(null, err);
+								reject(err);
+							});
 					});
 			});
 	});
@@ -229,6 +255,13 @@ function runScript (bundle) {
 module.exports = {
 	run: function (driver, scripts, tags, platform, osVersion, installPack) {
 		reporter.start(tags, platform, osVersion, installPack);
+
+		var targetFolder = path.join(__dirname, '..', 'screenshoot');
+		if (!fs.existsSync(targetFolder)) {
+			fs.mkdirSync(targetFolder);
+		} else {
+			fs.emptyDirSync(targetFolder);
+		}
 
 		return scripts.map(function () {
 				return runScript;
